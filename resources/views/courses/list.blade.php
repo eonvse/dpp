@@ -167,8 +167,10 @@
                             <span class="hover:text-sky-500">@sortablelink('courseTypeDoc.name','Тип документа')</span><br>
                             <span class="hover:text-sky-500">@sortablelink('dateDoc','Дата получения')</span></div>
                         <div class="font-bold text-center">Часов</div>
-                        <div class="col-span-2 font-bold">
-                            <span class="hover:text-sky-500">@sortablelink('Teacher.surname','Педагог')</span>
+                        <div class="col-span-2 font-bold">Педагог
+                            <!--<span class="hover:text-sky-500">
+                                @sortablelink('Teacher.surname','Педагог')
+                            </span>-->
                         </div>
                         <div class="text-xs font-bold text-right">Автор/Редактор<br>
                             <span class="hover:text-sky-500">@sortablelink('updated_at','Дата заполнения')</span></div>
@@ -218,9 +220,9 @@
                         </div> 
                         <div class="text-xs text-right">
                             @if (!empty($item->idAutor))
-                                {{ $item->Autor->name }} 
+                                {{ $item->Autor->name ?? '' }} 
                                 @if ($item->idAutor != $item->idUpdater)
-                                /<br> {{ $item->Updater->name }}
+                                /<br> {{ $item->Updater->name ?? '' }}
                                 @endif
                                 <br> {{ date('d.m.Y', strtotime($item->updated_at))}}
                             @endif

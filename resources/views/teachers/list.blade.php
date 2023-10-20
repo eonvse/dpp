@@ -108,7 +108,7 @@
                                 </td>
                                 <td class="flex justify-center text-center text-xs">
                                     @if (!empty($item->idUser))
-                                    <div class="font-bold">{{ $item->User->name }}<br><span class="font-normal">{{ $item->User->email }}</span></div>
+                                    <div class="font-bold">{{ empty($item->User->name) ? '' : $item->User->name }}<br><span class="font-normal">{{ empty($item->User->email) ? '' : $item->User->email }}</span></div>
                                         @if (!empty($item->user->moderatorInstitution->id))
                                     <div title="{{ 'Модератор - '.$item->user->moderatorInstitution->name }}" class="w-full pr-2 text-right text-orange-600 text-2xl cursor-pointer">
                                     &bull;
@@ -126,9 +126,9 @@
                                 </td>
                                 <td class="text-xs text-right block sm:table-cell">
                                     @if (!empty($item->idAutor))
-                                        {{ $item->Autor->name }} 
+                                        {{ $item->Autor->name ?? '' }} 
                                         @if ($item->idAutor != $item->idUpdater)
-                                        / {{ $item->Updater->name }}
+                                        / {{ $item->Updater->name ?? '' }}
                                         @endif
                                     @endif
                                 </td>
