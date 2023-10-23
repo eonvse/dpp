@@ -94,6 +94,8 @@ class ReportsController extends Controller
 
         $data = new courses;
         $user = Auth::user();
+        $isAdmin = $user->hasRole('admin');
+        $isModerator = $user->hasRole('moderator');
 
 
         $teacher = '';
@@ -103,14 +105,29 @@ class ReportsController extends Controller
             $teacher = teachers::where('id','=',$fIdTeachers)->first();
         }            
 
+        $fInstitutions = $request->fInstitutions;
+        $institutionIDs = [];
+        if (!empty($fInstitutions)) {
+            $institutionIDs = array_map('intval', $fInstitutions);
+        }
+
+
         $fPositions = $request->fPositions;
         $positionIDs = [];
         if (!empty($fPositions)) {
             $positionIDs = array_map('intval', $fPositions);
         }
 
+        $fDirections = $request->fDirections;
+        $directionIDs = [];
+        if (!empty($fDirections)) {
+            $directionIDs = array_map('intval', $fDirections);
+        }
+
+
         $teachersList = '';
-        if (!empty($user->moderatorInstitution->id)) {
+        //----MODERATOR----
+        if ($isModerator && !$isAdmin) {
             if (count($positionIDs)>0 && empty(in_array(-1, $positionIDs))) {
                 $teachersList = DB::table('teachers')->where('idInstitutions','=',$user->moderatorInstitution->id)->WhereIn('idPositions',$positionIDs)->pluck('id')->toArray();    
             }else{
@@ -118,20 +135,20 @@ class ReportsController extends Controller
             }
             $data = $data->whereIn('idTeachers', $teachersList);  
         }
-        $fidInstitution = $request->fidInstitution;
-        if (!empty($fidInstitution)) {
+        //----ADMIN----
+        if ($isAdmin) {
+            $teachersList = DB::table('teachers');
             if (count($positionIDs)>0 && empty(in_array(-1, $positionIDs))) {
-                $teachersList = DB::table('teachers')->where('idInstitutions','=',$fidInstitution)->WhereIn('idPositions',$positionIDs)->pluck('id')->toArray();
-            }else{
-                $teachersList = DB::table('teachers')->where('idInstitutions','=',$fidInstitution)->pluck('id')->toArray();
-            }        
-            $data = $data->whereIn('idTeachers', $teachersList);  
-        }else{
-            if (count($positionIDs)>0  && empty(in_array(-1, $positionIDs))) {
-                    $teachersList = DB::table('teachers')->whereIn('idPositions',$positionIDs)->pluck('id')->toArray();
-                    $data = $data->whereIn('idTeachers', $teachersList);  
+                $teachersList = $teachersList->WhereIn('idPositions',$positionIDs);    
             }
-        } 
+            if (count($institutionIDs)>0 && empty(in_array(-1, $institutionIDs))) {
+                $teachersList = $teachersList->WhereIn('idInstitutions',$institutionIDs);    
+            }
+
+            $teachersList = $teachersList->pluck('id')->toArray();
+            $data = $data->whereIn('idTeachers', $teachersList);  
+
+        }
 
         $fСourseType = $request->fСourseType;
         if (!empty($fСourseType)) {
@@ -141,10 +158,11 @@ class ReportsController extends Controller
         if (!empty($fIsFederal)) {
             $data = $data->where('isFederal', '=', $fIsFederal-1);
         } 
-        $fCourseDirections = $request->fCourseDirections;
-        if (!empty($fCourseDirections)) {
-            $data = $data->where('idDirections', '=', $fCourseDirections);
+        
+        if (count($directionIDs)>0 && empty(in_array(-1, $directionIDs))) {
+            $data = $data->whereIn('idDirections', $directionIDs);
         } 
+
         $fDateDocStart = $request->fDateDocStart;
         $fDateDocEnd = $request->fDateDocEnd;
         if (!empty($fDateDocStart)) {
@@ -178,9 +196,14 @@ class ReportsController extends Controller
 
         $guides = ['courseType'=>courseType::all()->sortBy('name'),'courseDirections'=>courseDirections::all()->sortBy('name'),'positions'=>$positions,'institutions'=>$institutions];
 
-        $filter = ['fIdTeachers'=>$fIdTeachers,'teacher'=>$teacher,'fСourseType'=>$fСourseType,'fIsFederal'=>$fIsFederal,'fCourseDirections'=>$fCourseDirections,'fDateDocStart'=>$fDateDocStart,'fDateDocEnd'=>$fDateDocEnd,'fDateUpdStart'=>$fDateUpdStart,'fDateUpdEnd'=>$fDateUpdEnd,'fidInstitution'=>$fidInstitution];
+        $filter = ['fIdTeachers'=>$fIdTeachers,'teacher'=>$teacher,'fСourseType'=>$fСourseType,'fIsFederal'=>$fIsFederal,'fDateDocStart'=>$fDateDocStart,'fDateDocEnd'=>$fDateDocEnd,'fDateUpdStart'=>$fDateUpdStart,'fDateUpdEnd'=>$fDateUpdEnd];
 
-        return view('reports.courses',['data' => $data, 'filter' => $filter,'positionIDs' => $positionIDs, 'guides' => $guides]);
+        return view('reports.courses',[ 'data' => $data, 
+                                        'filter' => $filter,
+                                        'positionIDs' => $positionIDs,
+                                        'institutionIDs' => $institutionIDs, 
+                                        'directionIDs' => $directionIDs, 
+                                        'guides' => $guides]);
 
     }
 
@@ -202,11 +225,11 @@ class ReportsController extends Controller
     {
 
         return Excel::download(new CoursesExport(
-                                                    $request->fidInstitution ?? '', 
+                                                    $request->institutionIDs ?? '', 
                                                     $request->positionIDs ?? '', 
                                                     $request->fСourseType ?? '', 
                                                     $request->fIsFederal ?? '', 
-                                                    $request->fCourseDirections ?? '', 
+                                                    $request->directionIDs ?? '', 
                                                     $request->fDateDocStart ?? '', 
                                                     $request->fDateDocEnd ?? '', 
                                                     $request->fDateUpdStart ?? '', 

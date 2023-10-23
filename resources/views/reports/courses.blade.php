@@ -31,14 +31,15 @@
                         <tr>
                             <td class="">Учреждение</td>
                             <td>
-                                <select size="1" name="fidInstitution" id="fidInstitution" class="form-control block w-full h-min p-1 text-base border border-solid border-gray-300">
-                                    <option {{empty($filter['fidInstitution']) ? 'selected' : ''}} value=0>По всем</option>
-                                    @foreach($guides['institutions'] as $item)
-                                    <option value="{{ $item->id }}" {{$filter['fidInstitution']==$item->id ? 'selected' : ''}}>{{ $item->name }}</option>
-                                    @endforeach
-                                </select>
+                                <select multiple multiselect-max-items="10" name="fInstitutions[]" id="fInstitutions[]" class="form-multiselect block w-full h-min p-1 text-base border border-solid border-gray-300">
+                                    <option value=-1 {{ in_array(-1, $institutionIDs) ? 'selected' : '' }}>По всем</option>
+                                @foreach($guides['institutions'] as $item)
+                                    <option value="{{ $item->id }}" {{ in_array($item->id, $institutionIDs) ? 'selected' : '' }}>{{ $item->name }}</option>
+                                @endforeach
+                                </select>  
                             </td>
                         </tr>
+
                         @endrole
                         <tr>
                             <td class="">Должность</td>
@@ -76,13 +77,17 @@
                         </tr>
                         <tr>
                             <td class="">Направление ДПП</td>
-                            <td><select size="1" name="fCourseDirections" id="fCourseDirections" class="form-control block w-full h-min p-1 text-base border border-solid border-gray-300">
-                            <option {{empty($filter['fCourseDirections']) ? 'selected' : ''}} value=0>По всем</option>
-                            @foreach($guides['courseDirections'] as $item)
-                            <option value="{{ $item->id }}" {{$filter['fCourseDirections']==$item->id ? 'selected' : ''}}>{{ $item->name }}</option>
-                            @endforeach
-                        </select></td>
+                            <td>
+                                <select multiple multiselect-max-items="10" name="fDirections[]" id="fDirections[]" class="form-multiselect block w-full h-min p-1 text-base border border-solid border-gray-300">
+                                    <option value=-1 {{ in_array(-1, $directionIDs) ? 'selected' : '' }}>По всем</option>
+                                    <option value=0 {{ in_array(0, $directionIDs) ? 'selected' : '' }}>Без направления</option>
+                                @foreach($guides['courseDirections'] as $item)
+                                    <option value="{{ $item->id }}" {{ in_array($item->id, $directionIDs) ? 'selected' : '' }}>{{ $item->name }}</option>
+                                @endforeach
+                                </select>  
+                            </td>
                         </tr>
+
                         <tr>
                             <td rowspan="2" class="">
                                     <div class="">Дата документа</div>
@@ -129,11 +134,11 @@
         </div>
         <div class="sm:w-auto sm:flex sm:inline-flex sm:items-center">
             <form action="{{ route('export.courses') }}" class="w-full" method="GET">
-                <input type="hidden" id="fidInstitution" name="fidInstitution" value="{{ $filter['fidInstitution'] }}">
+                <input type="hidden" id="institutionIDs" name="institutionIDs" value="{{ implode(',',$institutionIDs) }}">
                 <input type="hidden" id="positionIDs" name="positionIDs" value="{{ implode(',',$positionIDs) }}">
                 <input type="hidden" id="fСourseType" name="fСourseType" value="{{ $filter['fСourseType'] }}">
-                <input type="hidden" id="fIsFederal" name="fIsFederal" value="{{ $filter['fIsFederal'] }}"> 
-                <input type="hidden" id="fCourseDirections" name="fCourseDirections" value="{{ $filter['fCourseDirections'] }}"> 
+                <input type="hidden" id="fIsFederal" name="fIsFederal" value="{{ $filter['fIsFederal'] }}">
+                <input type="hidden" id="directionIDs" name="directionIDs" value="{{ implode(',',$directionIDs) }}">
                 <input type="hidden" id="fDateDocStart" name="fDateDocStart" value="{{ $filter['fDateDocStart'] }}"> 
                 <input type="hidden" id="fDateDocEnd" name="fDateDocEnd" value="{{ $filter['fDateDocEnd'] }}"> 
                 <input type="hidden" id="fDateUpdStart" name="fDateUpdStart" value="{{ $filter['fDateUpdStart'] }}"> 
@@ -146,10 +151,20 @@
                 {{ $filter['teacher']->surname }} {{ !empty($filter['teacher']->name) ? Str::substr($filter['teacher']->name,0,1).'.' : '' }} {{ !empty($filter['teacher']->patronymic) ? Str::substr($filter['teacher']->patronymic,0,1).'.' : '' }}| 
             @endif
 
-            @if(!empty($filter['fidInstitution'])) 
-                <span class="font-normal text-gray-500">Учреждение:</span> {{ $guides['institutions']->where('id','=',$filter['fidInstitution'])->first()->name }}.
+    
+            @if (!empty($institutionIDs))
+                <span class="font-normal text-gray-500">Учреждения:</span>
+                @if (!empty(in_array(-1, $institutionIDs)))
+                По всем
+                @else
+                    @foreach($guides['institutions'] as $item)
+                        @if (in_array($item->id,$institutionIDs))
+                        {{ $item->name.'.' }}
+                        @endif
+                    @endforeach
+                @endif
             @endif
-
+            
             @if (!empty($positionIDs))
                 <span class="font-normal text-gray-500">Должности:</span>
                 @if (!empty(in_array(-1, $positionIDs)))
@@ -174,9 +189,22 @@
                 <span class="font-normal text-gray-500">Входит в Фед. реестр:</span> {{ $filter['fIsFederal']==2 ? 'Да' : 'Нет' }}.
             @endif
 
-            @if(!empty($filter['fCourseDirections'])) 
-                <span class="font-normal text-gray-500">Направление ДПП:</span> {{ $guides['courseDirections']->where('id','=',$filter['fCourseDirections'])->first()->name }}.
+            @if (!empty($directionIDs))
+                <span class="font-normal text-gray-500">Направление ДПП:</span>
+                @if (!empty(in_array(-1, $directionIDs)))
+                По всем
+                @else
+                    @if (!empty(in_array(0, $directionIDs)))
+                    Без направления.
+                    @endif
+                    @foreach($guides['courseDirections'] as $item)
+                        @if (in_array($item->id,$directionIDs))
+                        {{ $item->name.'.' }}
+                        @endif
+                    @endforeach
+                @endif
             @endif
+
 
             @if(!empty($filter['fDateDocStart'])) 
                 <span class="font-normal text-gray-500">Дата с:</span> {{ date('d.m.Y', strtotime($filter['fDateDocStart'])) }}.

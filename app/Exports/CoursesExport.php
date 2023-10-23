@@ -24,16 +24,16 @@ class CoursesExport implements FromView//, ShouldAutoSize
     * 
     */
 
-    private $fidInstitution,$positionIDs,$fСourseType, $fIsFederal, $fCourseDirections, $fDateDocStart, $fDateDocEnd, $fDateUpdStart, $fDateUpdEnd;
+    private $institutionIDs,$positionIDs,$fСourseType, $fIsFederal, $directionIDs, $fDateDocStart, $fDateDocEnd, $fDateUpdStart, $fDateUpdEnd;
 
-    public function __construct(string $fidInstitution,string $positionIDs,string $fСourseType,string $fIsFederal,string $fCourseDirections,string $fDateDocStart,string $fDateDocEnd,string $fDateUpdStart, string $fDateUpdEnd) 
+    public function __construct(string $institutionIDs,string $positionIDs,string $fСourseType,string $fIsFederal,string $directionIDs,string $fDateDocStart,string $fDateDocEnd,string $fDateUpdStart, string $fDateUpdEnd) 
     {
 
-        $this->fidInstitution   = $fidInstitution;
+        $this->institutionIDs   = $institutionIDs;
         $this->positionIDs      = $positionIDs;
         $this->fСourseType      = $fСourseType;
         $this->fIsFederal       = $fIsFederal;
-        $this->fCourseDirections= $fCourseDirections;
+        $this->directionIDs     = $directionIDs;
         $this->fDateDocStart    = $fDateDocStart;
         $this->fDateDocEnd      = $fDateDocEnd;
         $this->fDateUpdStart    = $fDateUpdStart;
@@ -50,29 +50,34 @@ class CoursesExport implements FromView//, ShouldAutoSize
         if (strlen($this->positionIDs)>0) {
             $positionIDs = explode(',', $this->positionIDs);
         }
+        $institutionIDs = [];
+        if (strlen($this->institutionIDs)>0) {
+            $institutionIDs = explode(',', $this->institutionIDs);
+        }
+        $directionIDs = [];
+        if (strlen($this->directionIDs)>0) {
+            $directionIDs = explode(',', $this->directionIDs);
+        }
 
         if ($user->hasRole('admin')){
-            $fidInstitution = $this->fidInstitution;
-            if (!empty($fidInstitution)) {
-                $filter[] = 'Учреждение: '.institutions::where('id','=',$fidInstitution)->first()->name;
-                if (count($positionIDs)>0 && empty(in_array(-1, $positionIDs))) {
-                    $teachersList = DB::table('teachers')->where('idInstitutions','=',$fidInstitution)->WhereIn('idPositions',$positionIDs)->pluck('id')->toArray();
-                    $filter[] = 'Должности: '.implode(',',positions::whereIn('id',$positionIDs)->pluck('name')->toArray());
-                    if (!empty(in_array(0, $positionIDs))) $filter[] = "без должности";
 
-                }else{
-                    $teachersList = DB::table('teachers')->where('idInstitutions','=',$fidInstitution)->pluck('id')->toArray();
-                }        
-                $data = $data->whereIn('idTeachers', $teachersList);
+            $teachersList = DB::table('teachers');
+            if (count($positionIDs)>0 && empty(in_array(-1, $positionIDs))) {
+                $teachersList = $teachersList->WhereIn('idPositions',$positionIDs);
+                $filter[] = 'Должности: '.implode(',',positions::whereIn('id',$positionIDs)->pluck('name')->toArray()); 
+                if (!empty(in_array(0, $positionIDs))) $filter[] = "без должности";   
+            }
+            if (count($institutionIDs)>0 && empty(in_array(-1, $institutionIDs))) {
+                $teachersList = $teachersList->WhereIn('idInstitutions',$institutionIDs);
+                $filter[] = 'Учреждения: '.implode(',',institutions::whereIn('id',$institutionIDs)->pluck('name')->toArray()); 
+    
+            }
 
-            }else{
-                if (count($positionIDs)>0  && empty(in_array(-1, $positionIDs))) {
-                        $teachersList = DB::table('teachers')->whereIn('idPositions',$positionIDs)->pluck('id')->toArray();
-                        $data = $data->whereIn('idTeachers', $teachersList);  
-                        $filter[] = 'Должности: '.implode(',',positions::whereIn('id',$positionIDs)->pluck('name')->toArray());
-                        if (!empty(in_array(0, $positionIDs))) $filter[] = "без должности";
-                }
-            } 
+            $teachersList = $teachersList->pluck('id')->toArray();
+            $data = $data->whereIn('idTeachers', $teachersList);  
+
+
+
         } else {
         if (!empty($user->moderatorInstitution->id)) {
             if (count($positionIDs)>0 && empty(in_array(-1, $positionIDs))) {
@@ -96,10 +101,12 @@ class CoursesExport implements FromView//, ShouldAutoSize
             $isFederalText = $this->fIsFederal==2 ? 'Да' : 'Нет';
             $filter[] = 'Входит в Фед. реестр: '.$isFederalText;
         } 
-        if (!empty($this->fCourseDirections)) {
-            $data = $data->where('idDirections', '=', $this->fCourseDirections);
-            $filter[] = 'Направление ДПП: '.courseDirections::where('id','=',$this->fCourseDirections)->first()->name;
-        } 
+        if (count($directionIDs)>0 && empty(in_array(-1, $directionIDs))) {
+            $data = $data->WhereIn('idDirections',$directionIDs);
+            $filter[] = 'Направления ДПП: '.implode(',',courseDirections::whereIn('id',$directionIDs)->pluck('name')->toArray()); 
+            if (!empty(in_array(0, $directionIDs))) $filter[] = "Без направления";   
+        }
+
         if (!empty($this->fDateDocStart)) {
             $data = $data->where('dateDoc', '>=', $this->fDateDocStart);
             $filter[] = 'Дата с: '.date('d.m.Y', strtotime($this->fDateDocStart));
