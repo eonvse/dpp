@@ -148,7 +148,8 @@
                                                         <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                                         @endforeach
                                                     </select>    
-                                                    <button type="submit" class="inline-flex border-solid border border-green-500 rounded bg-green-100 hover:bg-green-200 p-1">Сохранить</button>
+                                                    <button type="submit" class="inline-flex border-solid border border-green-500 rounded bg-green-100 hover:bg-green-200 p-1 items-center">Сохранить</button>
+                                                    <a class="border-solid border border-gray-500 rounded bg-red-100 hover:bg-red-200 p-2" data-bs-toggle="collapse" href="{{ '#collapse'.$item->id }}" role="button" aria-expanded="false" aria-controls="{{ 'collapse'.$item->id }}">Отменить</a>
                                                 </form>
                                             </td>
                                         </tr>

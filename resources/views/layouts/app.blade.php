@@ -17,6 +17,7 @@
         @if (request()->routeIs('report.courses'))
             <script src="{{ asset('/js/multiselect-dropdown.js') }}"></script>
         @endif
+        @livewireStyles
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -36,5 +37,6 @@
                 {{ $slot }}
             </main>
         </div>
+        @livewireScripts
     </body>
 </html>

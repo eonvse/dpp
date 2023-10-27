@@ -257,6 +257,8 @@ class TeachersController extends Controller
     public function usersList(Request $request)
     {
 
+        $tabNum = $request->tab ?? 0;
+
         $usersEmpty = User::whereNotIn('id',teachers::select('idUser')->where('idUser','>',0))->get()->sortBy('name');
         //$moderators = institutions::where('idModerator','>',0)->get()->sortBy('name');
         $moderators = DB::select('select t.surname as tSurname, t.name as tName, i.name as iName, i.id as iid, u.id, u.name, u.email
@@ -271,9 +273,16 @@ class TeachersController extends Controller
         $institutions = institutions::whereNull('idModerator')->get()->sortBy('name');
         $guides = ['users'=>$users,'institutions'=>$institutions];
 
+        $totalUsers = User::orderBy('name')->paginate(20);
 
 
-        return view('teachers.users.list',['moderators' => $moderators,'usersEmpty' => $usersEmpty, 'guides'=>$guides]);
+
+        return view('teachers.users.list',[
+                                    'totalUsers' => $totalUsers,
+                                    'moderators' => $moderators,
+                                    'usersEmpty' => $usersEmpty, 
+                                    'guides'=>$guides, 
+                                    'tab'=>$tabNum]);
     }
 
     public function moderatorUpdate(Request $request) {
