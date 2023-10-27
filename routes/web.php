@@ -103,6 +103,7 @@ Route::group(['middleware' => ['role:admin']], function () {
     Route::post('/moderator/update',[TeachersController::class, 'moderatorUpdate'])         ->name('moderator.update');
     Route::post('/moderator/add',[TeachersController::class, 'moderatorAdd'])               ->name('moderator.add');
     Route::post('/moderator/del',[TeachersController::class, 'moderatorDel'])               ->name('moderator.del');
+    Route::post('/users/update/{idUser}',[TeachersController::class, 'userUpdate']) ->name('user.update');
 
     /*Список справочником (для мобильной версии)*/
     Route::get('/guides', function(){

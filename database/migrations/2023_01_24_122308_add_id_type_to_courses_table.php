@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('courses', function (Blueprint $table) {
             //
-            $table->unsignedBigInteger('idTypeDoc')->default(0)->after('idType');
+            //$table->unsignedBigInteger('idTypeDoc')->default(0)->after('idType');
         });
     }
 
@@ -28,7 +28,7 @@ return new class extends Migration
     {
         Schema::table('courses', function (Blueprint $table) {
             //
-            $table->dropColumn('idTypeDoc');
+            //$table->dropColumn('idTypeDoc');
         });
     }
 };

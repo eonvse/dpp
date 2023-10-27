@@ -1,5 +1,5 @@
 <div>
-    <div class="m-3 grid grid-cols-2 space-x-2">
+    <div class="m-3 grid grid-cols-2 space-x-2 items-center">
         <div>Режим отображения
             <select class="form-control block w-full h-min p-1 text-base border border-solid border-gray-300" wire:model = "typeView">
                 <option value="1">Все пользователи</option>
@@ -17,12 +17,37 @@
             </div>  
         </div>
 
-
     </div>
-    @if ($typeView==2)
-    <div class="">
-        <button type="button" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150" data-bs-toggle="modal" data-bs-target="#addModerator">Добавить модератора
-        </button>
+
+    <div class="grid grid-cols-1 items-center" >
+
+        <div class="grid grid-cols-5 font-bold ">
+            <div class="p-1">
+                <x-link-head scope="col" 
+                    sortable 
+                    wire:click="sortBy('name')" 
+                    :direction="$sortField === 'name' ? $sortDirection : null">Логин</x-link-head> 
+            </div>
+            <div class="p-1">
+                <x-link-head scope="col" 
+                    sortable 
+                    wire:click="sortBy('email')" 
+                    :direction="$sortField === 'email' ? $sortDirection : null">email</x-link-head> 
+
+            </div>
+            <div class="p-1">                
+                <x-link-head scope="col" 
+                    sortable 
+                    wire:click="sortBy('tSurname')" 
+                    :direction="$sortField === 'tSurname' ? $sortDirection : null">ФИО</x-link-head>
+            </div>
+            <div class="p-1 flex">Модератор
+                <x-link-head class="ml-3" scope="col" 
+                    sortable 
+                    wire:click="sortBy('iName')" 
+                    :direction="$sortField === 'iName' ? $sortDirection : null">учреждения</x-link-head>
+                            <div class="flex">
+        <x-button.icon-plus data-bs-toggle="modal" data-bs-target="#addModerator" title="Добавить модератора" />
     </div>
     <div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto" id="addModerator" tabindex="-1" aria-labelledby="addModerator" aria-modal="true" role="dialog">       
         <div class="modal-dialog modal-dialog-centered relative w-auto pointer-events-none">
@@ -73,60 +98,134 @@
             </div>
         </div>
     </div>
-    @endif
-    <div class="grid grid-cols-1 items-center">
-
-        <div class="grid grid-cols-5 font-bold ">
-            <div class="p-1">
-                <x-link-head scope="col" 
-                    sortable 
-                    wire:click="sortBy('name')" 
-                    :direction="$sortField === 'name' ? $sortDirection : null">Логин</x-link-head> 
-            </div>
-            <div class="p-1">
-                <x-link-head scope="col" 
-                    sortable 
-                    wire:click="sortBy('email')" 
-                    :direction="$sortField === 'email' ? $sortDirection : null">email</x-link-head> 
 
             </div>
-            <div class="p-1">                
-                <x-link-head scope="col" 
-                    sortable 
-                    wire:click="sortBy('tSurname')" 
-                    :direction="$sortField === 'tSurname' ? $sortDirection : null">ФИО</x-link-head>
+            <div class="text-center mx-auto text-gray-700">
+                <svg class="h-6 w-6"  width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">  <path stroke="none" d="M0 0h24v24H0z"/>  <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />  <circle cx="12" cy="12" r="3" /></svg>
             </div>
-            <div class="p-1 flex">Модератор
-                <x-link-head class="ml-3" scope="col" 
-                    sortable 
-                    wire:click="sortBy('iName')" 
-                    :direction="$sortField === 'iName' ? $sortDirection : null">учреждения</x-link-head>
-            </div>
-            <div class="p-1">...</div>
         </div>
         
-        @foreach ($users as $user)
+        @forelse ($users as $user)
         <div class="grid grid-cols-5 border hover:bg-gray-200">
             <div class="border-r p-1">{{ $user->name }}</div>
             <div class="border-r p-1">{{ $user->email }}</div>
             <div class="border-r p-1 text-sm">
                 @if (!empty($user->tId))
-                    {{ $user->tSurname ?? '' }} {{ $user->tName ?? '' }} {{ $user->tPatronymic ?? '' }}
+                    <a href="teachers?fSurname={{ $user->tSurname }}" class="hover:underline"> {{ $user->tSurname ?? '' }}</a> {{ $user->tName ?? '' }} {{ $user->tPatronymic ?? '' }}
+                    @if ($user->max_role==3)
+                        <span class="text-indigo-800 font-bold text-xs">(Администратор)</span>
+                    @endif
                 @else
-                    <span class="text-red-500">Данных нет</span>
+                    @if ($user->max_role==3)
+                        <span class="text-indigo-800 font-bold">Администратор</span>
+                    @else
+                        <div class="flex items-center">
+                            <div class="text-red-500 grow">Данных нет</div>
+                            <x-button.icon-plus wire:click="AddPersonalForUser({{ $user->id }})" title="Добавить персональные данные" />
+                        </div>
+                    @endif
                 @endif    
             </div>
-            <div class="border-r p-1 text-sm">
+            <div class="border-r p-1 text-xs flex">
                 @if (!empty($user->iId))
-                    <span class="text-orange-400 font-bold">{{ $user->iName }}</span>
+                    <span class="text-orange-400 font-bold grow">{{ $user->iName }}</span>
+                    <div class="flex items-center">
+                        <x-button.icon-edit wire:click="showEditInstModer({{ $user->iId }},'{{ $user->iName }}',{{ $user->id }},'{{ $user->name }}','{{ $user->email }}')" title="Поменять модератора"/>
+                        <x-button.icon-del wire:click="showDeleteModerator({{ $user->iId }})" title="Удалить из модераторов"/>
+                    </div>
                 @endif    
             </div>
-            <div class="p-1">...</div>
+            <div class="p-1 flex items-center mx-auto">
+                @if ($user->max_role!=3)
+                <x-button.icon-pass wire:click="showModalPassword({{ $user->id }},'{{ $user->name }}','{{ $user->email }}')"  title="Новый пароль" />
+                @endif
+                <x-button.icon-edit wire:click="showModalEditUser({{ $user->id }})" title="Редактировать логин, email" />
+                @if ($user->max_role!=3 && empty($user->tId))
+                <x-button.icon-del wire:click="showDeleteUser({{ $user->id }})" title="Удалить пользователя" />
+                @endif
+            </div>
         </div>
-        @endforeach
+        @empty
+            <div class="text-xl text-center p-5 border text-neutral-600">Пользователи не найдены</div>
+        @endforelse
     
     </div>
     {{ $users->links() }}
 
+<x-modal-wire.dialog wire:model.defer="showDelModerator" type="warn" maxWidth="md">
+    <x-slot name="title">
+        <span class="grow">Удалить модератора</span><x-button.icon-cancel @click="show = false" wire:click="cancelDelModerator" class="text-gray-700 hover:text-white dark:hover:text-white" />
+    </x-slot>
+    <x-slot name="content">
+        <div class="flex-col space-y-2">
+            <x-input.label class="text-lg font-medium">Вы действительно хотите удалить модератора? 
+                <div class="text-red-600 shadow p-1">Учреждения {{ $delModerator['name'] }}</div>
+            </x-input.label>
+            <x-button.secondary @click="show = false" wire:click="cancelDelModerator">{{ __('Отменить') }}</x-button.secondary>
+            <x-button.danger wire:click="destroyModerator({{ $delModerator['id'] }})">{{ __('Удалить')}}</x-button.danger>
+        </div>                            
+    </x-slot>
+</x-modal-wire.dialog>
+
+<x-modal-wire.dialog wire:model.defer="showEditModerator" maxWidth="md">
+        <x-slot name="title"><span class="grow">{{ __('Поменять модератора') }}</span><x-button.icon-cancel @click="show = false" wire:click="cancelEditModerator" class="text-gray-700 hover:text-white" /></x-slot>
+        <x-slot name="content">
+            <div class="text-lg">Заменить модератора учреждения <div>{{ $editModerator['iName'] ?? '' }}</div></div>
+            <div class="text-lg font-bold">c {{ $editModerator['uName'] ?? '' }} ({{ $editModerator['uEmail'] ?? '' }}) на</div>
+            <form method="post" action="{{ route('moderator.update') }}" class="flex-col space-y-2">                                                 
+                @csrf
+                <input type="hidden" id="id" name="id" value="{{ $editModerator['iId'] }}" />
+                <input type="hidden" id="oldModerator" name="oldModerator" value="{{ $editModerator['uId'] }}" />
+                <div><x-input.select-user  class="inline-block my-2" :items="$guides['users']" name="idModerator" id="idModerator" required /></div>  
+                <x-button.create type="submit">{{ __('Сохранить') }}</x-button.create>
+                <x-button.secondary @click="show = false" wire:click="cancelEditModerator">{{ __('Отмена') }}</x-button.secondary>
+            </form>
+        </x-slot>
+</x-modal-wire.dialog>
+
+<x-modal-wire.dialog wire:model.defer="showNewPassword" maxWidth="md">
+        <x-slot name="title"><span class="grow">{{ __('Поменять пароль') }}</span><x-button.icon-cancel @click="show = false" wire:click="canselModalPassword" class="text-gray-700 hover:text-white" /></x-slot>
+        <x-slot name="content">
+            <div class="text-lg">Установить новый пароль пользователю</div>
+            <div class="text-lg font-bold">{{ $newPasswordUser['uName'] ?? '' }} ({{ $newPasswordUser['uEmail'] ?? '' }})</div>
+            <form wire:submit="savePassword" class="flex-col space-y-2"> 
+                <x-input.text wire:model="newPassword" required />
+                 @error('newPassword') <div class="text-red-800">{{ $message }}</div> 
+                 @else <x-button.create type="submit">{{ __('Сохранить') }}</x-button.create>
+                 @enderror
+                <x-button.secondary @click="show = false" wire:click="canselModalPassword">{{ __('Отмена') }}</x-button.secondary>
+            </form>
+        </x-slot>
+</x-modal-wire.dialog>
+
+<x-modal-wire.dialog wire:model.defer="showEditUser" maxWidth="md">
+        <x-slot name="title"><span class="grow">{{ __('Редактировать логин, email') }}</span><x-button.icon-cancel @click="show = false" wire:click="cancelEditUser" class="text-gray-700 hover:text-white" /></x-slot>
+        <x-slot name="content">
+            <form action="{{ route('user.update',['idUser'=>$editUser->id ?? 0]) }}" method="POST" class="flex-col space-y-2"> 
+                @csrf
+                <x-input.text wire:model="editUser.name" id="name" name="name" required />
+                 @error('editUser.name') <div class="text-red-800">{{ $message }}</div>@enderror
+                <x-input.text wire:model="editUser.email" id="email" name="email" required />
+                 @error('editUser.email') <div class="text-red-800">{{ $message }}</div>@enderror
+                <x-button.create type="submit">{{ __('Сохранить') }}</x-button.create>
+                <x-button.secondary @click="show = false" wire:click="cancelEditUser">{{ __('Отмена') }}</x-button.secondary>
+            </form>
+        </x-slot>
+</x-modal-wire.dialog>
+
+<x-modal-wire.dialog wire:model.defer="showDelUser" type="warn" maxWidth="md">
+    <x-slot name="title">
+        <span class="grow">Удалить пользователя</span><x-button.icon-cancel @click="show = false" wire:click="cancelDelUser" class="text-gray-700 hover:text-white dark:hover:text-white" />
+    </x-slot>
+    <x-slot name="content">
+        <div class="flex-col space-y-2">
+            <x-input.label class="text-lg font-medium">Вы действительно хотите удалить пользователя? 
+                <div class="text-red-600 shadow p-1">{{ $delUser['name'] }} <span class="text-gray-500">({{ $delUser['email'] }})</span></div>
+            </x-input.label>
+            <x-button.secondary @click="show = false" wire:click="cancelDelUser">{{ __('Отменить') }}</x-button.secondary>
+            <x-button.danger wire:click="destroyUser({{ $delUser['id'] }})">{{ __('Удалить')}}</x-button.danger>
+        </div>                            
+    </x-slot>
+</x-modal-wire.dialog>
 
 </div>

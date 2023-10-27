@@ -170,10 +170,10 @@ class TeachersController extends Controller
         $del = teachers::find($request->id);
         $del->delete();
 
-        if (!empty($request->idUser)) {
+        /*if (!empty($request->idUser)) {
             $del = User::find($request->idUser);
             $del->delete();
-        }
+        }*/
 
         return redirect('teachers');        
     }
@@ -257,32 +257,7 @@ class TeachersController extends Controller
     public function usersList(Request $request)
     {
 
-        $tabNum = $request->tab ?? 0;
-
-        $usersEmpty = User::whereNotIn('id',teachers::select('idUser')->where('idUser','>',0))->get()->sortBy('name');
-        //$moderators = institutions::where('idModerator','>',0)->get()->sortBy('name');
-        $moderators = DB::select('select t.surname as tSurname, t.name as tName, i.name as iName, i.id as iid, u.id, u.name, u.email
-                                    from users u 
-                                    LEFT JOIN institutions i on u.id = i.idModerator
-                                    left JOIN teachers t on u.id = t.idUser
-                                    where i.id is not null
-                                    order by t.surname, t.name');
-
-
-        $users = User::role('teacher')->get()->sortBy('name');
-        $institutions = institutions::whereNull('idModerator')->get()->sortBy('name');
-        $guides = ['users'=>$users,'institutions'=>$institutions];
-
-        $totalUsers = User::orderBy('name')->paginate(20);
-
-
-
-        return view('teachers.users.list',[
-                                    'totalUsers' => $totalUsers,
-                                    'moderators' => $moderators,
-                                    'usersEmpty' => $usersEmpty, 
-                                    'guides'=>$guides, 
-                                    'tab'=>$tabNum]);
+        return view('teachers.users.list');
     }
 
     public function moderatorUpdate(Request $request) {
@@ -369,6 +344,15 @@ class TeachersController extends Controller
         
         return redirect ('users');
 
+    }
+
+    public function userUpdate(Request $request, $idUser)
+    {
+        $upd = User::find($idUser);
+        $upd->name = $request->name;
+        $upd->email = $request->email;
+        $upd->save();
+        return redirect ('users');
     }
 
     public function personalAdd(Request $request, $idUser)
